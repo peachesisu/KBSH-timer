@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>열공 타이머 - 구글 연동 캘린더</title>
+    <style>
+        body { 
+            font-family: 'Arial', 'Malgun Gothic', sans-serif; 
+            background-color: #f5f6fa; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start; 
+            min-height: 100vh; 
+            box-sizing: border-box; 
+        }
+        
+        .calendar-container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 15px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            max-width: 800px; /* 구글 캘린더가 쾌적하게 보이도록 폭을 조금 넓혔어! */
+            width: 100%; 
+            box-sizing: border-box; 
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+            color: #2d3436;
+            font-weight: normal;
+        }
+
+        /* 구글 캘린더가 들어갈 박스 영역 */
+        .google-calendar-wrapper {
+            width: 100%;
+            height: 600px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #eee;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            background-color: #fafafa;
+        }
+
+        .google-calendar-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* 메인으로 돌아가기 버튼 (단말 도형 스타일 유지) */
+        .back-btn { 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin-top: 25px;
+            padding: 11px 25px; 
+            font-size: 0.9rem; 
+            font-weight: bold; 
+            color: #0984e3; 
+            text-decoration: none; 
+            border: 2px solid #0984e3; 
+            border-radius: 50px; 
+            background-color: white; 
+            transition: all 0.2s; 
+            cursor: pointer; 
+        }
+        .back-btn:hover { background-color: #e8f4fd; }
+    </style>
+</head>
+<body>
+
+<div class="calendar-container">
+    <h1>📅 Google Calendar</h1>
+
+    <div class="google-calendar-wrapper">
+        <iframe src="https://calendar.google.com/calendar/embed?src=ko.south_korea%23holiday%40group.v.calendar.google.com&ctz=Asia%2FSeoul"></iframe>
+    </div>
+
+    <a href="index.html" class="back-btn">Go Home</a>
+</div>
+
+</body>
+</html>

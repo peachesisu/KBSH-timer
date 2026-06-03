@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>열공 타이머 (자동 리셋 버전)</title>
+    <style>
+        body { 
+            font-family: 'Arial', 'Malgun Gothic', sans-serif; 
+            background-color: #f5f6fa; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start; 
+            min-height: 100vh; 
+            box-sizing: border-box; 
+        }
+        
+        /* 좌우 배치를 위한 메인 컨테이너 */
+        .main-wrapper { display: flex; gap: 20px; max-width: 1000px; width: 100%; align-items: stretch; }
+        
+        /* 👈 왼쪽 섹션 */
+        .left-section { 
+            flex: 1; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 15px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            text-align: center; 
+            box-sizing: border-box; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: space-between; 
+        }
+        
+        /* 👉 오른쪽 섹션 */
+        .right-section { 
+            flex: 1.4; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 15px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            box-sizing: border-box; 
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; 
+            align-self: flex-start;     
+        }
+
+        /* 현재 시각 표시 */
+        .real-time-clock { font-size: 1.1rem; color: #2d3436; font-weight: bold; margin-bottom: 20px; text-align: center; width: 100%; letter-spacing: -0.3px; background: #edf2f7; padding: 10px 0; border-radius: 50px; }
+
+        /* 타이머 영역 */
+        .timer-section { margin-bottom: 15px; width: 100%; }
+        .total-timer { font-size: 3.2rem; font-weight: normal; margin: 0; color: #2d3436; font-variant-numeric: tabular-nums; }
+        .total-label { color: #aaa; font-size: 0.85rem; margin-top: -5px; display: block; margin-bottom: 15px; font-weight: bold; letter-spacing: 0.5px;}
+        
+        /* 과목별 타이머 박스 */
+        .subject-timers { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 8px; 
+            margin: 10px auto; 
+            padding: 14px 0;
+            background-color: #fafafa;
+            border-radius: 12px;
+            max-width: 300px;
+            width: 100%;
+        }
+        
+        /* 과목 목록 줄 전체 레이아웃 */
+        .subject-time-item { 
+            display: flex !important; 
+            flex-direction: row !important;
+            justify-content: center; 
+            align-items: center;
+            width: 100%; 
+            font-size: 1rem; 
+            font-weight: normal; 
+            padding: 3px 0;
+            box-sizing: border-box;
+        }
+        
+        /* 과목명 영역 고정 */
+        .sub-name-part {
+            width: 80px;
+            text-align: right;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 6px;
+            display: inline-block;
+        }
+        
+        /* 과목과 시간 사이의 고정 여백 */
+        .sub-space-part {
+            width: 12px; 
+            display: inline-block;
+        }
+        
+        /* 시간 영역 고정 */
+        .sub-time-part {
+            width: 90px; 
+            text-align: left;
+            padding-left: 6px;
+            font-variant-numeric: tabular-nums; 
+            display: inline-block;
+        }
+
+        /* 과목 관리 영역 */
+        .subject-section { margin-bottom: 15px; width: 100%; }
+        .subject-btns { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+        
+        /* 과목별 버튼 */
+        .subject-btn { 
+            padding: 8px 18px; 
+            border: 2px solid #eee; 
+            border-radius: 50px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            background-color: #fff; 
+            color: #2d3436; 
+            transition: all 0.2s; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+            font-size: 0.9rem; 
+        }
+        
+        /* 과목 추가 입력 컨테이너 */
+        .add-subject-form { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 15px; width: 100%; }
+        
+        /* 새 과목 이름 입력칸 */
+        .add-subject-form input { 
+            padding: 9px 16px; 
+            border: 1px solid #ddd; 
+            border-radius: 50px; 
+            width: 150px; 
+            font-size: 0.9rem; 
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        /* 과목 추가 버튼 */
+        .add-subject-form button { 
+            width: 34px;
+            height: 34px;
+            padding: 0;
+            border: none; 
+            background-color: #2ecc71; 
+            color: white; 
+            border-radius: 50%; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 1.3rem; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(46, 204, 113, 0.3);
+            flex-shrink: 0; 
+        }
+
+        /* 시작/정지 버튼 */
+        .control-btn { 
+            padding: 12px 40px; 
+            font-size: 1.15rem; 
+            border: none; 
+            border-radius: 50px; 
+            cursor: pointer; 
+            background-color: #0984e3; 
+            color: white; 
+            font-weight: bold; 
+            width: 80%; 
+            box-shadow: 0 4px 6px rgba(9, 132, 227, 0.2); 
+            margin-bottom: 15px; 
+            transition: background-color 0.2s; 
+        }
+        .control-btn.stop { background-color: #d63031; box-shadow: 0 4px 6px rgba(214, 48, 49, 0.2); }
+        
+        /* 메뉴 영역 */
+        .menu-section { display: flex; flex-direction: column; gap: 8px; width: 80%; margin-bottom: 5px; }
+        .menu-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 20px; font-size: 0.9rem; font-weight: bold; color: #0984e3; text-decoration: none; border: 2px solid #0984e3; border-radius: 50px; background-color: white; transition: all 0.2s; cursor: pointer; box-sizing: border-box; }
+        .menu-btn:hover { background-color: #e8f4fd; }
+
+        /* 타임테이블 컨테이너 */
+        .timetable-container { width: 100%; display: flex; flex-direction: column; }
+        
+        /* 상단 분 보조 가이드 레이블 */
+        .grid-header-row { display: grid; grid-template-columns: 45px 1fr; gap: 8px; margin-bottom: 5px; color: #aaa; font-size: 0.75rem; font-weight: bold; }
+        .minutes-guide { position: relative; width: 100%; height: 15px; }
+        .minutes-guide span { position: absolute; transform: translateX(-50%); font-size: 0.7rem; color: #b2bec3; }
+
+        .timetable-rows-content { display: flex; flex-direction: column; }
+
+        /* 시간 행 높이 고정 */
+        .timetable-row { display: grid; grid-template-columns: 45px 1fr; gap: 8px; align-items: center; height: 23px; box-sizing: border-box; }
+        .timetable-row:nth-child(even) { background-color: #fafafa; }
+        
+        .row-label { text-align: right; font-size: 0.75rem; color: #666; font-weight: bold; }
+        
+        /* 10분 단위 연한 세로 보조선 배경 */
+        .time-track { 
+            position: relative;
+            height: 18px; 
+            border: 0.5px solid #e2e8f0; 
+            border-radius: 4px; 
+            background-color: white; 
+            background-image: linear-gradient(to right, transparent 16.65%, #f1f2f6 16.65%, #f1f2f6 16.8%, transparent 16.8%, 
+                                              transparent 33.31%, #f1f2f6 33.31%, #f1f2f6 33.46%, transparent 33.46%,
+                                              transparent 49.98%, #f1f2f6 49.98%, #f1f2f6 50.13%, transparent 50.13%,
+                                              transparent 66.64%, #f1f2f6 66.64%, #f1f2f6 66.79%, transparent 66.79%,
+                                              transparent 83.30%, #f1f2f6 83.30%, #f1f2f6 83.45%, transparent 83.45%);
+            overflow: hidden; 
+        }
+        
+        /* 절대 위치 조각 블록 스타일 */
+        .study-slice {
+            position: absolute;
+            height: 100%;
+            top: 0;
+            border-radius: 1px;
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-wrapper">
+    
+    <div class="left-section">
+        <div style="width: 100%;">
+            <div class="real-time-clock" id="real-time-display">현재 시간: 00:00:00</div>
+
+            <div class="timer-section">
+                <h2 class="total-timer" id="timer-display">00:00:00</h2>
+                <span class="total-label">TOTAL TIME</span>
+                <div class="subject-timers" id="subject-timers-container"></div>
+            </div>
+            
+            <div class="subject-section">
+                <div class="subject-btns" id="subject-btns-container"></div>
+                <div class="add-subject-form">
+                    <input type="text" id="new-subject-name" placeholder="과목 이름 입력" onkeydown="checkEnter(event)">
+                    <button onclick="addNewSubject()">+</button>
+                </div>
+            </div>
+        </div>
+
+        <div style="width: 100%; display: flex; flex-direction: column; align-items: center; margin-top: 20px;">
+            <button class="control-btn" id="start-btn" onclick="toggleTimer()">시작</button>
+            <hr style="width: 90%; margin: 5px 0 15px 0; border: 0.5px solid #eee;">
+            <div class="menu-section">
+                <a href="calendar.html" class="menu-btn">📅 월별 캘린더 보러가기</a>
+                <a href="todo.html" class="menu-btn">📝 ToDo List 설정하러 가기</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="right-section">
+        <div class="timetable-container">
+            <div class="grid-header-row">
+                <span></span>
+                <div class="minutes-guide">
+                    <span style="left: 0%;">00</span>
+                    <span style="left: 16.66%;">10</span>
+                    <span style="left: 33.33%;">20</span>
+                    <span style="left: 50%;">30</span>
+                    <span style="left: 66.66%;">40</span>
+                    <span style="left: 83.33%;">50</span>
+                    <span style="left: 100%;">60</span>
+                </div>
+            </div>
+            <div class="timetable-rows-content" id="timetable-rows-wrapper"></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    /* 타이머 코어 로직 소스 */
+    let timerInterval = null;
+    let totalSeconds = 0;
+    let isRunning = false;
+    let currentSubjectName = ''; 
+
+    const colorPalette = [
+        '#d63031', '#0984e3', '#00b894', '#6c5ce7', '#e67e22',
+        '#e84393', '#2c3e50', '#8e44ad', '#16a085', '#d35400',
+        '#2980b9', '#27ae60', '#b71540', '#0a3d62', '#0c2461',
+        '#e17055', '#4a235a', '#78281f', '#145a32', '#7e5109'
+    ];
+
+    let subjects = [
+        { name: '국어', color: colorPalette[0], seconds: 0 },
+        { name: '수학', color: colorPalette[1], seconds: 0 },
+        { name: '영어', color: colorPalette[2], seconds: 0 }
+    ];
+    
+    let timelineData = {};
+    for(let i=0; i<24; i++) { timelineData[i] = []; }
+
+    let startHour = 0;
+    let startMinute = 0;
+
+    // 현재 날짜 구하기 (YYYY-MM-DD 포맷)
+    function getTodayString() {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    // 자정 체크 및 자동 리셋 시스템
+    function checkMidnightReset() {
+        const lastSavedDate = localStorage.getItem('study_saved_date');
+        const todayStr = getTodayString();
+
+        // 저장된 날짜가 오늘과 다르면 (자정이 지나서 날짜가 바뀌었으면) 타이머 데이터 리셋!
+        if (lastSavedDate && lastSavedDate !== todayStr) {
+            totalSeconds = 0;
+            subjects.forEach(sub => sub.seconds = 0);
+            for(let i=0; i<24; i++) { timelineData[i] = []; }
+            
+            localStorage.setItem('study_total_seconds', '0');
+            localStorage.setItem('study_subjects', JSON.stringify(subjects));
+            localStorage.setItem('study_timeline_v4', JSON.stringify(timelineData));
+            
+            updateTimerDisplays();
+            drawTimetable();
+            console.log("자정이 지나 데이터가 새롭게 리셋되었습니다!");
+        }
+        // 오늘 날짜를 보관함에 갱신
+        localStorage.setItem('study_saved_date', todayStr);
+    }
+
+    function loadStorageData() {
+        // 데이터 불러오기 전 날짜 체크 먼저 실행
+        checkMidnightReset();
+
+        const savedSubjects = localStorage.getItem('study_subjects');
+        const savedTimeline = localStorage.getItem('study_timeline_v4');
+        const savedTotal = localStorage.getItem('study_total_seconds');
+
+        if (savedSubjects) subjects = JSON.parse(savedSubjects);
+        if (savedTimeline) timelineData = JSON.parse(savedTimeline);
+        if (savedTotal) totalSeconds = parseInt(savedTotal, 10);
+
+        currentSubjectName = subjects.length > 0 ? subjects[0].name : '';
+    }
+
+    function saveStorageData() {
+        localStorage.setItem('study_saved_date', getTodayString());
+        localStorage.setItem('study_subjects', JSON.stringify(subjects));
+        localStorage.setItem('study_timeline_v4', JSON.stringify(timelineData));
+        localStorage.setItem('study_total_seconds', totalSeconds.toString());
+    }
+
+    function updateRealTime() {
+        const now = new Date();
+        document.getElementById('real-time-display').innerText = `현재 시간: ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+        
+        // 1초마다 실시간으로 날짜 체크해서 공부하다 밤 12시 넘어가도 칼같이 리셋되게 연동
+        checkMidnightReset();
+    }
+    setInterval(updateRealTime, 1000);
+    updateRealTime();
+
+    function checkEnter(event) { if (event.key === 'Enter') { addNewSubject(); } }
+
+    function addNewSubject() {
+        const input = document.getElementById('new-subject-name');
+        const name = input.value.trim();
+        if (name === '') return alert('과목 이름을 입력해주세요!');
+        if (subjects.some(sub => sub.name === name)) return alert('이미 존재하는 과목입니다!');
+
+        const usedColors = subjects.map(sub => sub.color);
+        const availableColors = colorPalette.filter(color => !usedColors.includes(color));
+        
+        let selectedColor = '';
+        if (availableColors.length > 0) {
+            const randomIndex = Math.floor(Math.random() * availableColors.length);
+            selectedColor = availableColors[randomIndex];
+        } else {
+            const randomIndex = Math.floor(Math.random() * colorPalette.length);
+            selectedColor = colorPalette[randomIndex];
+        }
+
+        subjects.push({ name: name, color: selectedColor, seconds: 0 });
+        input.value = ''; 
+        
+        if(!currentSubjectName) currentSubjectName = name;
+        
+        renderSubjects();
+        saveStorageData();
+    }
+
+    function renderSubjects() {
+        const btnsContainer = document.getElementById('subject-btns-container');
+        const timersContainer = document.getElementById('subject-timers-container');
+        if (!btnsContainer || !timersContainer) return;
+
+        btnsContainer.innerHTML = '';
+        timersContainer.innerHTML = '';
+
+        subjects.forEach((sub, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'subject-btn';
+            btn.innerText = sub.name;
+            
+            if (currentSubjectName === sub.name) {
+                btn.style.backgroundColor = sub.color; btn.style.borderColor = sub.color; btn.style.color = 'white';
+            } else {
+                btn.style.backgroundColor = 'white'; btn.style.borderColor = '#eee'; btn.style.color = '#2d3436';
+            }
+            btn.onclick = () => selectSubject(sub.name);
+            btnsContainer.appendChild(btn);
+
+            const timerItem = document.createElement('div');
+            timerItem.className = 'subject-time-item';
+            timerItem.style.color = sub.color;
+            timerItem.innerHTML = `
+                <span class="sub-name-part">${sub.name}</span>
+                <span class="sub-space-part"></span>
+                <span class="sub-time-part" id="time-text-${index}">${formatTime(sub.seconds)}</span>
+            `;
+            timersContainer.appendChild(timerItem);
+        });
+    }
+
+    function selectSubject(name) {
+        if(isRunning) return alert('공부 중에는 과목을 바꿀 수 없습니다. 정지 후 변경해주세요!');
+        currentSubjectName = name;
+        renderSubjects(); 
+    }
+
+    function toggleTimer() {
+        if (subjects.length === 0 || !currentSubjectName) return alert('공부할 과목을 먼저 추가하거나 선택해주세요!');
+        
+        const btn = document.getElementById('start-btn');
+        if (!isRunning) {
+            // 타이머 시작할 때도 한 번 더 날짜 체크
+            checkMidnightReset();
+
+            isRunning = true;
+            btn.innerText = '정지';
+            btn.classList.add('stop');
+
+            const now = new Date();
+            startHour = now.getHours();
+            startMinute = now.getMinutes() + (now.getSeconds() / 60);
+
+            timerInterval = setInterval(() => {
+                totalSeconds++;
+                const activeSub = subjects.find(sub => sub.name === currentSubjectName);
+                if (activeSub) activeSub.seconds++;
+                updateTimerDisplays();
+            }, 1000);
+        } else {
+            isRunning = false;
+            btn.innerText = '시작';
+            btn.classList.remove('stop');
+            clearInterval(timerInterval);
+            
+            const now = new Date();
+            const endHour = now.getHours();
+            const endMinute = now.getMinutes() + (now.getSeconds() / 60);
+            
+            const activeSub = subjects.find(sub => sub.name === currentSubjectName);
+            if (activeSub) {
+                timelineData[startHour].push({
+                    subjectName: activeSub.name,
+                    color: activeSub.color,
+                    startMin: startMinute,
+                    endMin: endMinute
+                });
+                
+                drawTimetable();
+            }
+            
+            saveStorageData(); 
+        }
+    }
+
+    function formatTime(secs) {
+        const hrs = String(Math.floor(secs / 3600)).padStart(2, '0');
+        const mins = String(Math.floor((secs % 3600) / 60)).padStart(2, '0');
+        const secsOut = String(secs % 60).padStart(2, '0');
+        return `${hrs}:${mins}:${secsOut}`;
+    }
+
+    function updateTimerDisplays() {
+        document.getElementById('timer-display').innerText = formatTime(totalSeconds);
+        subjects.forEach((sub, index) => {
+            const el = document.getElementById(`time-text-${index}`);
+            if (el) el.innerText = formatTime(sub.seconds);
+        });
+    }
+
+    function drawTimetable() {
+        const wrapper = document.getElementById('timetable-rows-wrapper');
+        wrapper.innerHTML = '';
+        
+        for (let i = 0; i < 24; i++) {
+            const row = document.createElement('div');
+            row.className = 'timetable-row';
+            
+            const label = document.createElement('div');
+            label.className = 'row-label';
+            label.innerText = `${i}시`;
+            row.appendChild(label);
+
+            const track = document.createElement('div');
+            track.className = 'time-track';
+            
+            const slices = timelineData[i] || [];
+            
+            slices.forEach(slice => {
+                const sliceDiv = document.createElement('div');
+                sliceDiv.className = 'study-slice';
+                sliceDiv.style.backgroundColor = slice.color;
+                
+                let leftPercent = (slice.startMin / 60) * 100;
+                let widthPercent = ((slice.endMin - slice.startMin) / 60) * 100;
+                
+                if(leftPercent + widthPercent > 100) widthPercent = 100 - leftPercent;
+
+                sliceDiv.style.left = `${leftPercent}%`;
+                sliceDiv.style.width = `${widthPercent}%`;
+                
+                let startPrint = Math.floor(slice.startMin);
+                let durationPrint = Math.round(slice.endMin - slice.startMin);
+                if(durationPrint <= 0) durationPrint = 1;
+                sliceDiv.title = `${slice.subjectName}: ${startPrint}분 시작 (${durationPrint}분간 공부함)`;
+                
+                track.appendChild(sliceDiv);
+            });
+            
+            row.appendChild(track);
+            wrapper.appendChild(row);
+        }
+    }
+
+    loadStorageData();
+    drawTimetable();
+    renderSubjects();
+    updateTimerDisplays();
+</script>
+
+</body>
+</html>
