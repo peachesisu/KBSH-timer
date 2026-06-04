@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>공부 타이머</title>
+    <title>Study Timer</title>
     <style>
         body { 
             font-family: 'Arial', 'Malgun Gothic', sans-serif; 
@@ -15,12 +15,11 @@
             align-items: flex-start; 
             min-height: 100vh; 
             box-sizing: border-box; 
+            position: relative; 
         }
         
-        /* 좌우 배치를 위한 메인 컨테이너 */
-        .main-wrapper { display: flex; gap: 20px; max-width: 1000px; width: 100%; align-items: stretch; }
+        .main-wrapper { display: flex; gap: 20px; max-width: 1000px; width: 100%; align-items: stretch; margin-bottom: 40px; }
         
-        /* 👈 왼쪽 섹션 */
         .left-section { 
             flex: 1; 
             background: white; 
@@ -35,7 +34,6 @@
             justify-content: space-between; 
         }
         
-        /* 👉 오른쪽 섹션 */
         .right-section { 
             flex: 1.4; 
             background: white; 
@@ -49,15 +47,12 @@
             align-self: flex-start;     
         }
 
-        /* 현재 시각 표시 */
         .real-time-clock { font-size: 1.1rem; color: #2d3436; font-weight: bold; margin-bottom: 20px; text-align: center; width: 100%; letter-spacing: -0.3px; background: #edf2f7; padding: 10px 0; border-radius: 50px; }
 
-        /* 타이머 영역 */
         .timer-section { margin-bottom: 15px; width: 100%; }
         .total-timer { font-size: 3.2rem; font-weight: normal; margin: 0; color: #2d3436; font-variant-numeric: tabular-nums; }
         .total-label { color: #aaa; font-size: 0.85rem; margin-top: -5px; display: block; margin-bottom: 15px; font-weight: bold; letter-spacing: 0.5px;}
         
-        /* 과목별 타이머 박스 */
         .subject-timers { 
             display: flex; 
             flex-direction: column; 
@@ -71,7 +66,6 @@
             width: 100%;
         }
         
-        /* 과목 목록 줄 전체 레이아웃 */
         .subject-time-item { 
             display: flex !important; 
             flex-direction: row !important;
@@ -84,7 +78,6 @@
             box-sizing: border-box;
         }
         
-        /* 과목명 영역 고정 */
         .sub-name-part {
             width: 80px;
             text-align: right;
@@ -95,13 +88,11 @@
             display: inline-block;
         }
         
-        /* 과목과 시간 사이의 고정 여백 */
         .sub-space-part {
             width: 12px; 
             display: inline-block;
         }
         
-        /* 시간 영역 고정 */
         .sub-time-part {
             width: 90px; 
             text-align: left;
@@ -110,11 +101,9 @@
             display: inline-block;
         }
 
-        /* 과목 관리 영역 */
         .subject-section { margin-bottom: 15px; width: 100%; }
         .subject-btns { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
         
-        /* 과목별 버튼 */
         .subject-btn { 
             padding: 8px 18px; 
             border: 2px solid #eee; 
@@ -128,10 +117,8 @@
             font-size: 0.9rem; 
         }
         
-        /* 과목 추가 입력 컨테이너 */
         .add-subject-form { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 15px; width: 100%; }
         
-        /* 새 과목 이름 입력칸 */
         .add-subject-form input { 
             padding: 9px 16px; 
             border: 1px solid #ddd; 
@@ -142,7 +129,6 @@
             box-sizing: border-box;
         }
 
-        /* 과목 추가 버튼 */
         .add-subject-form button { 
             width: 34px;
             height: 34px;
@@ -161,7 +147,6 @@
             flex-shrink: 0; 
         }
 
-        /* 시작/정지 버튼 */
         .control-btn { 
             padding: 12px 40px; 
             font-size: 1.15rem; 
@@ -178,28 +163,23 @@
         }
         .control-btn.stop { background-color: #d63031; box-shadow: 0 4px 6px rgba(214, 48, 49, 0.2); }
         
-        /* 메뉴 영역 */
         .menu-section { display: flex; flex-direction: column; gap: 8px; width: 80%; margin-bottom: 5px; }
         .menu-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 20px; font-size: 0.9rem; font-weight: bold; color: #0984e3; text-decoration: none; border: 2px solid #0984e3; border-radius: 50px; background-color: white; transition: all 0.2s; cursor: pointer; box-sizing: border-box; }
         .menu-btn:hover { background-color: #e8f4fd; }
 
-        /* 타임테이블 컨테이너 */
         .timetable-container { width: 100%; display: flex; flex-direction: column; }
         
-        /* 상단 분 보조 가이드 레이블 */
         .grid-header-row { display: grid; grid-template-columns: 45px 1fr; gap: 8px; margin-bottom: 5px; color: #aaa; font-size: 0.75rem; font-weight: bold; }
         .minutes-guide { position: relative; width: 100%; height: 15px; }
         .minutes-guide span { position: absolute; transform: translateX(-50%); font-size: 0.7rem; color: #b2bec3; }
 
         .timetable-rows-content { display: flex; flex-direction: column; }
 
-        /* 시간 행 높이 고정 */
         .timetable-row { display: grid; grid-template-columns: 45px 1fr; gap: 8px; align-items: center; height: 23px; box-sizing: border-box; }
         .timetable-row:nth-child(even) { background-color: #fafafa; }
         
         .row-label { text-align: right; font-size: 0.75rem; color: #666; font-weight: bold; }
         
-        /* 10분 단위 연한 세로 보조선 배경 */
         .time-track { 
             position: relative;
             height: 18px; 
@@ -214,13 +194,23 @@
             overflow: hidden; 
         }
         
-        /* 절대 위치 조각 블록 스타일 */
         .study-slice {
             position: absolute;
             height: 100%;
             top: 0;
             border-radius: 1px;
             transition: all 0.3s ease;
+        }
+
+        .screen-footer-copyright {
+            position: fixed;
+            right: 20px;
+            bottom: 15px;
+            font-size: 0.8rem;
+            color: #a4b0be;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            z-index: 9999; 
         }
     </style>
 </head>
@@ -251,8 +241,8 @@
             <button class="control-btn" id="start-btn" onclick="toggleTimer()">시작</button>
             <hr style="width: 90%; margin: 5px 0 15px 0; border: 0.5px solid #eee;">
             <div class="menu-section">
-                <a href="calendar.html" class="menu-btn">📅 월별 캘린더 보러가기</a>
-                <a href="todo.html" class="menu-btn">📝 ToDo List 설정하러 가기</a>
+                <a href="calendar.html" class="menu-btn">📅 Calendar</a>
+                <a href="todo.html" class="menu-btn">📝 TODO List</a>
             </div>
         </div>
     </div>
@@ -277,8 +267,11 @@
 
 </div>
 
+<div class="screen-footer-copyright">
+    © 2026 Yugyeong Kim. All rights reserved.
+</div>
+
 <script>
-    /* 타이머 코어 로직 소스 */
     let timerInterval = null;
     let totalSeconds = 0;
     let isRunning = false;
@@ -303,18 +296,15 @@
     let startHour = 0;
     let startMinute = 0;
 
-    // 현재 날짜 구하기 (YYYY-MM-DD 포맷)
     function getTodayString() {
         const d = new Date();
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     }
 
-    // 자정 체크 및 자동 리셋 시스템
     function checkMidnightReset() {
         const lastSavedDate = localStorage.getItem('study_saved_date');
         const todayStr = getTodayString();
 
-        // 저장된 날짜가 오늘과 다르면 (자정이 지나서 날짜가 바뀌었으면) 타이머 데이터 리셋!
         if (lastSavedDate && lastSavedDate !== todayStr) {
             totalSeconds = 0;
             subjects.forEach(sub => sub.seconds = 0);
@@ -328,12 +318,10 @@
             drawTimetable();
             console.log("자정이 지나 데이터가 새롭게 리셋되었습니다!");
         }
-        // 오늘 날짜를 보관함에 갱신
         localStorage.setItem('study_saved_date', todayStr);
     }
 
     function loadStorageData() {
-        // 데이터 불러오기 전 날짜 체크 먼저 실행
         checkMidnightReset();
 
         const savedSubjects = localStorage.getItem('study_subjects');
@@ -357,8 +345,6 @@
     function updateRealTime() {
         const now = new Date();
         document.getElementById('real-time-display').innerText = `현재 시간: ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
-        
-        // 1초마다 실시간으로 날짜 체크해서 공부하다 밤 12시 넘어가도 칼같이 리셋되게 연동
         checkMidnightReset();
     }
     setInterval(updateRealTime, 1000);
@@ -437,7 +423,6 @@
         
         const btn = document.getElementById('start-btn');
         if (!isRunning) {
-            // 타이머 시작할 때도 한 번 더 날짜 체크
             checkMidnightReset();
 
             isRunning = true;
