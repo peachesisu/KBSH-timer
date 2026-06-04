@@ -308,7 +308,11 @@
         if (lastSavedDate && lastSavedDate !== todayStr) {
             totalSeconds = 0;
             subjects.forEach(sub => sub.seconds = 0);
-            for(let i=0; i<24; i++) { timelineData[i] = []; }
+            
+            timelineData = {};
+            for(let i=0; i<24; i++) { 
+                timelineData[i] = []; 
+            }
             
             localStorage.setItem('study_total_seconds', '0');
             localStorage.setItem('study_subjects', JSON.stringify(subjects));
@@ -316,7 +320,7 @@
             
             updateTimerDisplays();
             drawTimetable();
-            console.log("자정이 지나 데이터가 새롭게 리셋되었습니다!");
+            console.log("Log reset");
         }
         localStorage.setItem('study_saved_date', todayStr);
     }
