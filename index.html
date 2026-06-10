@@ -3,215 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study Timer</title>
+    <title>Study timer</title>
+    <link rel="icon" href="favicon.png" type="image/png">
     <style>
+        :root {
+            --bg-color: #f5f6fa;
+            --card-bg: #ffffff;
+            --text-main: #2d3436;
+            --text-muted: #aaa;
+            --text-sub: #666;
+            --border-color: #e2e8f0;
+            --inner-bg: #fafafa;
+            --shadow: rgba(0,0,0,0.1);
+            --clock-bg: #edf2f7;
+            --nav-btn-bg: #edf2f7;
+            --nav-btn-hover: #e2e8f0;
+            --todo-item-bg: #f8f9fa;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121214;
+            --card-bg: #1e1e24;
+            --text-main: #f5f6fa;
+            --text-muted: #718096;
+            --text-sub: #a0aec0;
+            --border-color: #2d3748;
+            --inner-bg: #141416;
+            --shadow: rgba(0,0,0,0.4);
+            --clock-bg: #2d3748;
+            --nav-btn-bg: #2d3748;
+            --nav-btn-hover: #4a5568;
+            --todo-item-bg: #252529;
+        }
+
         body { 
             font-family: 'Arial', 'Malgun Gothic', sans-serif; 
-            background-color: #f5f6fa; 
+            background-color: var(--bg-color); 
+            color: var(--text-main);
             margin: 0; 
             padding: 20px; 
             display: flex; 
-            justify-content: center;
+            justify-content: center; 
             align-items: flex-start; 
             min-height: 100vh; 
             box-sizing: border-box; 
             position: relative; 
+            transition: background-color 0.3s, color 0.3s;
         }
         
+        .toggle-bar-btn {
+            display: inline-block;
+            width: 80%;
+            max-width: 300px;
+            padding: 10px 0;
+            margin: 15px auto 5px auto;
+            border: 1.5px solid var(--text-main);
+            border-radius: 50px;
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: var(--text-main);
+            background-color: var(--card-bg);
+            cursor: pointer;
+            user-select: none;
+            text-align: center;
+            transition: background-color 0.2s;
+        }
+
+        .toggle-bar-btn:hover {
+            background-color: var(--clock-bg);
+        }
+
+        .subject-timers.collapsed {
+            display: none !important;
+        }
         .main-wrapper { display: flex; gap: 20px; max-width: 1000px; width: 100%; align-items: stretch; margin-bottom: 40px; }
-        
+       
+        .subject-notice { 
+            font-size: 0.75rem; 
+            color: var(--text-muted); 
+            text-align: center; 
+            width: 100%; 
+            margin-top: 5px; 
+        }
+       
         .left-section { 
             flex: 1; 
-            background: white; 
+            background: var(--card-bg); 
             padding: 20px; 
             border-radius: 15px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            box-shadow: 0 4px 10px var(--shadow); 
             text-align: center; 
             box-sizing: border-box; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             justify-content: space-between; 
+            transition: background 0.3s, box-shadow 0.3s;
         }
         
         .right-section { 
             flex: 1.4; 
-            background: white; 
+            background: var(--card-bg); 
             padding: 20px; 
             border-radius: 15px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            box-shadow: 0 4px 10px var(--shadow); 
             box-sizing: border-box; 
             display: flex;
             flex-direction: column;
             justify-content: flex-start; 
             align-self: flex-start;     
+            position: relative;
+            overflow: hidden; 
+            min-height: 580px;
+            transition: background 0.3s, box-shadow 0.3s;
         }
 
-        .real-time-clock { font-size: 1.1rem; color: #2d3436; font-weight: bold; margin-bottom: 20px; text-align: center; width: 100%; letter-spacing: -0.3px; background: #edf2f7; padding: 10px 0; border-radius: 50px; }
+        .slider-window { width: 100%; overflow: hidden; flex: 1; position: relative; }
+        .slider-track { display: flex; width: 200%; height: 100%; transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
+        .slide-page { width: 50%; height: 100%; box-sizing: border-box; flex-shrink: 0; }
+
+        .slider-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+        .slider-title { font-size: 1.1rem; font-weight: bold; color: var(--text-main); display: flex; align-items: center; gap: 6px; }
+        .slider-nav-btns { display: flex; gap: 8px; }
+        .nav-arrow-btn { background: var(--nav-btn-bg); border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--text-sub); transition: background 0.2s; }
+        .nav-arrow-btn:hover { background: var(--nav-btn-hover); }
+
+        .slider-dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; width: 100%; }
+        .dot { width: 8px; height: 8px; background-color: var(--text-muted); border-radius: 50%; transition: all 0.3s; cursor: pointer; }
+        .dot.active { background-color: #0984e3; width: 18px; border-radius: 4px; }
+
+        .real-time-clock { font-size: 1.1rem; color: var(--text-main); font-weight: bold; margin-bottom: 15px; text-align: center; width: 100%; letter-spacing: -0.3px; background: var(--clock-bg); padding: 10px 0; border-radius: 50px; transition: background 0.3s; }
+
+        .dday-container { width: 100%; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .dday-list { width: 100%; display: flex; flex-direction: column; gap: 6px; align-items: center; }
+        .dday-item { display: flex; align-items: center; justify-content: space-between; background-color: var(--inner-bg); padding: 8px 16px; border-radius: 30px; width: 90%; box-sizing: border-box; border: 1px solid var(--border-color); }
+        .dday-info { font-size: 0.9rem; font-weight: bold; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 120px; }
+        .dday-value { font-size: 1rem; font-weight: 800; color: #0984e3; }
+        .dday-del-btn { background: #ff7675; border: none; color: white; width: 18px; height: 18px; border-radius: 50%; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0; font-weight: bold; }
+        .dday-form { display: flex; gap: 5px; width: 90%; justify-content: center; align-items: center; }
+        .dday-form input[type="text"] { flex: 1; padding: 6px 12px; border: 1px solid var(--border-color); background-color: var(--card-bg); color: var(--text-main); border-radius: 50px; font-size: 0.8rem; outline: none; }
+        .dday-form input[type="date"] { width: 100px; padding: 5px 8px; border: 1px solid var(--border-color); background-color: var(--card-bg); color: var(--text-main); border-radius: 50px; font-size: 0.8rem; outline: none; }
+        .dday-form button { width: 26px; height: 26px; border: none; background-color: #0984e3; color: white; border-radius: 50%; cursor: pointer; font-weight: bold; font-size: 1rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
         .timer-section { margin-bottom: 15px; width: 100%; }
-        .total-timer { font-size: 3.2rem; font-weight: normal; margin: 0; color: #2d3436; font-variant-numeric: tabular-nums; }
-        .total-label { color: #aaa; font-size: 0.85rem; margin-top: -5px; display: block; margin-bottom: 15px; font-weight: bold; letter-spacing: 0.5px;}
+        .total-timer { font-size: 3.2rem; font-weight: normal; margin: 0; color: var(--text-main); font-variant-numeric: tabular-nums; }
+        .total-label { color: var(--text-muted); font-size: 0.85rem; margin-top: -5px; display: block; margin-bottom: 15px; font-weight: bold; letter-spacing: 0.5px;}
         
-        .subject-timers { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 8px; 
-            margin: 10px auto; 
-            padding: 14px 0;
-            background-color: #fafafa;
-            border-radius: 12px;
-            max-width: 300px;
-            width: 100%;
-        }
-        
-        .subject-time-item { 
-            display: flex !important; 
-            flex-direction: row !important;
-            justify-content: center; 
-            align-items: center;
-            width: 100%; 
-            font-size: 1rem; 
-            font-weight: normal; 
-            padding: 3px 0;
-            box-sizing: border-box;
-        }
-        
-        .sub-name-part {
-            width: 80px;
-            text-align: right;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            padding-right: 6px;
-            display: inline-block;
-        }
-        
-        .sub-space-part {
-            width: 12px; 
-            display: inline-block;
-        }
-        
-        .sub-time-part {
-            width: 90px; 
-            text-align: left;
-            padding-left: 6px;
-            font-variant-numeric: tabular-nums; 
-            display: inline-block;
-        }
+        .subject-timers { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 10px auto; padding: 14px 0; background-color: var(--inner-bg); border-radius: 12px; max-width: 300px; width: 100%; transition: background 0.3s; }
+        .subject-time-item { display: flex !important; flex-direction: row !important; justify-content: center; align-items: center; width: 100%; font-size: 1rem; padding: 3px 0; box-sizing: border-box; }
+        .sub-name-part { width: 80px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 6px; display: inline-block; }
+        .sub-space-part { width: 12px; display: inline-block; }
+        .sub-time-part { width: 90px; text-align: left; padding-left: 6px; font-variant-numeric: tabular-nums; display: inline-block; }
 
         .subject-section { margin-bottom: 15px; width: 100%; }
         .subject-btns { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+        .subject-btn { padding: 8px 18px; border: 2px solid var(--border-color); border-radius: 50px; cursor: pointer; font-weight: bold; background-color: var(--card-bg); color: var(--text-main); transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-size: 0.9rem; user-select: none; }
         
-        .subject-btn { 
-            padding: 8px 18px; 
-            border: 2px solid #eee; 
-            border-radius: 50px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            background-color: #fff; 
-            color: #2d3436; 
-            transition: all 0.2s; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
-            font-size: 0.9rem; 
-        }
-        
+        [data-theme="dark"] .subject-btn { border-color: #3a3a42; }
+
         .add-subject-form { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 15px; width: 100%; }
-        
-        .add-subject-form input { 
-            padding: 9px 16px; 
-            border: 1px solid #ddd; 
-            border-radius: 50px; 
-            width: 150px; 
-            font-size: 0.9rem; 
-            outline: none;
-            box-sizing: border-box;
-        }
+        .add-subject-form input { padding: 9px 16px; border: 1px solid var(--border-color); background-color: var(--card-bg); color: var(--text-main); border-radius: 50px; width: 150px; font-size: 0.9rem; outline: none; box-sizing: border-box; }
+        .add-subject-form button { width: 34px; height: 34px; border: none; background-color: #2ecc71; color: white; border-radius: 50%; cursor: pointer; font-weight: bold; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(46, 204, 113, 0.3); flex-shrink: 0; }
 
-        .add-subject-form button { 
-            width: 34px;
-            height: 34px;
-            padding: 0;
-            border: none; 
-            background-color: #2ecc71; 
-            color: white; 
-            border-radius: 50%; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 1.3rem; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 5px rgba(46, 204, 113, 0.3);
-            flex-shrink: 0; 
-        }
-
-        .control-btn { 
-            padding: 12px 40px; 
-            font-size: 1.15rem; 
-            border: none; 
-            border-radius: 50px; 
-            cursor: pointer; 
-            background-color: #0984e3; 
-            color: white; 
-            font-weight: bold; 
-            width: 80%; 
-            box-shadow: 0 4px 6px rgba(9, 132, 227, 0.2); 
-            margin-bottom: 15px; 
-            transition: background-color 0.2s; 
-        }
+        .control-btn { padding: 12px 40px; font-size: 1.15rem; border: none; border-radius: 50px; cursor: pointer; background-color: #0984e3; color: white; font-weight: bold; width: 80%; box-shadow: 0 4px 6px rgba(9, 132, 227, 0.2); margin-bottom: 15px; transition: background-color 0.2s; }
         .control-btn.stop { background-color: #d63031; box-shadow: 0 4px 6px rgba(214, 48, 49, 0.2); }
         
-        .menu-section { display: flex; flex-direction: column; gap: 8px; width: 80%; margin-bottom: 5px; }
-        .menu-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 20px; font-size: 0.9rem; font-weight: bold; color: #0984e3; text-decoration: none; border: 2px solid #0984e3; border-radius: 50px; background-color: white; transition: all 0.2s; cursor: pointer; box-sizing: border-box; }
-        .menu-btn:hover { background-color: #e8f4fd; }
+        .menu-section { display: flex; flex-direction: column; gap: 8px; width: 80%; margin-bottom: 15px; }
+        .menu-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 20px; font-size: 0.9rem; font-weight: bold; color: #0984e3; text-decoration: none; border: 2px solid #0984e3; border-radius: 50px; background-color: var(--card-bg); transition: all 0.2s; cursor: pointer; box-sizing: border-box; }
+        .menu-btn:hover { background-color: var(--clock-bg); }
+
+        .theme-switch-wrapper { display: flex; align-items: center; justify-content: center; gap: 10px; width: 80%; padding: 5px 0; }
+        .theme-switch-label { font-size: 0.85rem; font-weight: bold; color: var(--text-sub); }
+        
+        .theme-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .theme-switch input { opacity: 0; width: 0; height: 0; }
+        
+        .theme-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e0; transition: .3s; border-radius: 34px; }
+        .theme-slider:before { position: absolute; content: "☀️"; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        input:checked + .theme-slider { background-color: #0984e3; }
+        input:checked + .theme-slider:before { transform: translateX(24px); content: "🌙"; background-color: #1e1e24; }
 
         .timetable-container { width: 100%; display: flex; flex-direction: column; }
-        
-        .grid-header-row { display: grid; grid-template-columns: 45px 1fr; gap: 8px; margin-bottom: 5px; color: #aaa; font-size: 0.75rem; font-weight: bold; }
+        .grid-header-row { display: grid; grid-template-columns: 45px 1fr; gap: 8px; margin-bottom: 5px; color: var(--text-muted); font-size: 0.75rem; font-weight: bold; }
         .minutes-guide { position: relative; width: 100%; height: 15px; }
-        .minutes-guide span { position: absolute; transform: translateX(-50%); font-size: 0.7rem; color: #b2bec3; }
-
-        .timetable-rows-content { display: flex; flex-direction: column; }
-
+        .minutes-guide span { position: absolute; transform: translateX(-50%); font-size: 0.7rem; color: var(--text-muted); }
+        .timetable-rows-content { display: flex; flex-direction: column; max-height: 460px; overflow-y: auto; padding-right: 4px; }
         .timetable-row { display: grid; grid-template-columns: 45px 1fr; gap: 8px; align-items: center; height: 23px; box-sizing: border-box; }
-        .timetable-row:nth-child(even) { background-color: #fafafa; }
-        
-        .row-label { text-align: right; font-size: 0.75rem; color: #666; font-weight: bold; }
+        .timetable-row:nth-child(even) { background-color: var(--inner-bg); }
+        .row-label { text-align: right; font-size: 0.75rem; color: var(--text-sub); font-weight: bold; }
         
         .time-track { 
-            position: relative;
-            height: 18px; 
-            border: 0.5px solid #e2e8f0; 
-            border-radius: 4px; 
-            background-color: white; 
-            background-image: linear-gradient(to right, transparent 16.65%, #f1f2f6 16.65%, #f1f2f6 16.8%, transparent 16.8%, 
-                                              transparent 33.31%, #f1f2f6 33.31%, #f1f2f6 33.46%, transparent 33.46%,
-                                              transparent 49.98%, #f1f2f6 49.98%, #f1f2f6 50.13%, transparent 50.13%,
-                                              transparent 66.64%, #f1f2f6 66.64%, #f1f2f6 66.79%, transparent 66.79%,
-                                              transparent 83.30%, #f1f2f6 83.30%, #f1f2f6 83.45%, transparent 83.45%);
+            position: relative; height: 18px; border: 0.5px solid var(--border-color); border-radius: 4px; background-color: var(--card-bg); 
+            background-image: linear-gradient(to right, transparent 16.65%, var(--inner-bg) 16.65%, var(--inner-bg) 16.8%, transparent 16.8%, 
+                                              transparent 33.31%, var(--inner-bg) 33.31%, var(--inner-bg) 33.46%, transparent 33.46%,
+                                              transparent 49.98%, var(--inner-bg) 49.98%, var(--inner-bg) 50.13%, transparent 50.13%,
+                                              transparent 66.64%, var(--inner-bg) 66.64%, var(--inner-bg) 66.79%, transparent 66.79%,
+                                              transparent 83.30%, var(--inner-bg) 83.30%, var(--inner-bg) 83.45%, transparent 83.45%);
             overflow: hidden; 
+            transition: background 0.3s, border-color 0.3s;
         }
-        
-        .study-slice {
-            position: absolute;
-            height: 100%;
-            top: 0;
-            border-radius: 1px;
-            transition: all 0.3s ease;
-        }
+        .study-slice { position: absolute; height: 100%; top: 0; border-radius: 1px; transition: all 0.3s ease; }
+        [data-theme="dark"] .study-slice { filter: saturate(1.4) brightness(1.1); box-shadow: 0 0 4px rgba(255,255,255,0.1); }
 
-        .screen-footer-copyright {
-            position: fixed;
-            right: 20px;
-            bottom: 15px;
-            font-size: 0.8rem;
-            color: #a4b0be;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-            z-index: 9999; 
-        }
+        .todo-container { width: 100%; display: flex; flex-direction: column; height: 100%; }
+        .todo-form { display: flex; gap: 8px; margin-bottom: 15px; }
+        .todo-form input { flex: 1; padding: 10px 16px; border: 1px solid var(--border-color); background-color: var(--card-bg); color: var(--text-main); border-radius: 50px; font-size: 0.95rem; outline: none; }
+        .todo-form button { padding: 10px 20px; background-color: #0984e3; color: white; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        .todo-list { list-style: none; padding: 0; margin: 0; max-height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        .todo-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: var(--todo-item-bg); border-radius: 10px; border-left: 4px solid var(--text-muted); transition: all 0.2s; }
+        .todo-item.completed { border-left-color: #2ecc71; opacity: 0.6; }
+        .todo-item.completed .todo-text { text-decoration: line-through; color: var(--text-muted); }
+        .todo-left { display: flex; align-items: center; gap: 10px; flex: 1; }
+        .todo-checkbox { width: 18px; height: 18px; cursor: pointer; }
+        .todo-text { font-size: 0.95rem; color: var(--text-main); word-break: break-all; }
+        .todo-del-btn { background: none; border: none; color: #e53e3e; font-weight: bold; cursor: pointer; font-size: 1.1rem; padding: 0 4px; }
+
+        .screen-footer-copyright { position: fixed; right: 20px; bottom: 15px; font-size: 0.8rem; color: #a4b0be; font-weight: 500; letter-spacing: 0.5px; z-index: 9999; }
     </style>
 </head>
 <body>
@@ -221,47 +228,100 @@
     <div class="left-section">
         <div style="width: 100%;">
             <div class="real-time-clock" id="real-time-display">현재 시간: 00:00:00</div>
+            
+            <div class="dday-container">
+                <div class="dday-list" id="dday-list-wrapper"></div>
+                <div class="dday-form" id="dday-input-form">
+                    <input type="text" id="dday-title-input" placeholder="디데이 설정">
+                    <input type="date" id="dday-date-input">
+                    <button onclick="addDDay()">+</button>
+                </div>
+            </div>
 
             <div class="timer-section">
                 <h2 class="total-timer" id="timer-display">00:00:00</h2>
                 <span class="total-label">TOTAL TIME</span>
+                
+                <div class="toggle-bar-btn" onclick="toggleSubjectTimers()">
+                    과목별 공부시간<span id="toggle-arrow">▼</span>
+                </div>
+                
                 <div class="subject-timers" id="subject-timers-container"></div>
             </div>
-            
             <div class="subject-section">
                 <div class="subject-btns" id="subject-btns-container"></div>
                 <div class="add-subject-form">
                     <input type="text" id="new-subject-name" placeholder="과목 이름 입력" onkeydown="checkEnter(event)">
                     <button onclick="addNewSubject()">+</button>
                 </div>
+                <div class="subject-notice">삭제하려면 Shift+과목선택</div>
             </div>
         </div>
 
-        <div style="width: 100%; display: flex; flex-direction: column; align-items: center; margin-top: 20px;">
-            <button class="control-btn" id="start-btn" onclick="toggleTimer()">시작</button>
-            <hr style="width: 90%; margin: 5px 0 15px 0; border: 0.5px solid #eee;">
+        <div style="width: 100%; display: flex; flex-direction: column; align-items: center; margin-top: 10px;">
+            <button class="control-btn" id="start-btn" onclick="toggleTimer()">START</button>
+            <hr style="width: 90%; margin: 5px 0 12px 0; border: 0.5px solid var(--border-color);">
+            
             <div class="menu-section">
-                <a href="calendar.html" class="menu-btn">📅 Calendar</a>
-                <a href="todo.html" class="menu-btn">📝 TODO List</a>
+                <a href="calendar.html" class="menu-btn">Calendar</a>
+            </div>
+
+            <div class="theme-switch-wrapper">
+                <span class="theme-switch-label">화면 테마</span>
+                <label class="theme-switch">
+                    <input type="checkbox" id="theme-toggle-checkbox" onchange="switchTheme(event)">
+                    <span class="theme-slider"></span>
+                </label>
             </div>
         </div>
     </div>
     
     <div class="right-section">
-        <div class="timetable-container">
-            <div class="grid-header-row">
-                <span></span>
-                <div class="minutes-guide">
-                    <span style="left: 0%;">00</span>
-                    <span style="left: 16.66%;">10</span>
-                    <span style="left: 33.33%;">20</span>
-                    <span style="left: 50%;">30</span>
-                    <span style="left: 66.66%;">40</span>
-                    <span style="left: 83.33%;">50</span>
-                    <span style="left: 100%;">60</span>
-                </div>
+        <div class="slider-header">
+            <div class="slider-title" id="slider-page-title">Time Table</div>
+            <div class="slider-nav-btns">
+                <button class="nav-arrow-btn" onclick="moveSlide(-1)">❮</button>
+                <button class="nav-arrow-btn" onclick="moveSlide(1)">❯</button>
             </div>
-            <div class="timetable-rows-content" id="timetable-rows-wrapper"></div>
+        </div>
+
+        <div class="slider-window">
+            <div class="slider-track" id="main-slider-track">
+                
+                <div class="slide-page">
+                    <div class="timetable-container">
+                        <div class="grid-header-row">
+                            <span></span>
+                            <div class="minutes-guide">
+                                <span style="left: 0%;">00</span>
+                                <span style="left: 16.66%;">10</span>
+                                <span style="left: 33.33%;">20</span>
+                                <span style="left: 50%;">30</span>
+                                <span style="left: 66.66%;">40</span>
+                                <span style="left: 83.33%;">50</span>
+                                <span style="left: 100%;">60</span>
+                            </div>
+                        </div>
+                        <div class="timetable-rows-content" id="timetable-rows-wrapper"></div>
+                    </div>
+                </div>
+
+                <div class="slide-page">
+                    <div class="todo-container">
+                        <div class="todo-form">
+                            <input type="text" id="todo-input" placeholder="오늘 할 일을 입력하세요..." onkeydown="checkTodoEnter(event)">
+                            <button onclick="addTodo()">추가</button>
+                        </div>
+                        <ul class="todo-list" id="todo-list-wrapper"></ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="slider-dots">
+            <div class="dot active" onclick="goSlide(0)"></div>
+            <div class="dot" onclick="goSlide(1)"></div>
         </div>
     </div>
 
@@ -272,6 +332,57 @@
 </div>
 
 <script>
+    let ddayList = [];
+
+    function switchTheme(e) {
+        if (e.target.checked) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('study_theme', 'dark');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'light');
+            localStorage.setItem('study_theme', 'light');
+        }
+    }
+
+    function initTheme() {
+        const savedTheme = localStorage.getItem('study_theme');
+        const checkbox = document.getElementById('theme-toggle-checkbox');
+        
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            if(checkbox) checkbox.checked = true;
+        } else {
+            document.documentElement.setAttribute('data-theme', 'light');
+            if(checkbox) checkbox.checked = false;
+        }
+    }
+
+    let currentSlideIdx = 0;
+    const slideTitles = ["Time Table", "📝 TODO List"];
+
+    function moveSlide(direction) {
+        currentSlideIdx += direction;
+        if (currentSlideIdx < 0) currentSlideIdx = 1;
+        if (currentSlideIdx > 1) currentSlideIdx = 0;
+        updateSlidePosition();
+    }
+
+    function goSlide(index) {
+        currentSlideIdx = index;
+        updateSlidePosition();
+    }
+
+    function updateSlidePosition() {
+        const track = document.getElementById('main-slider-track');
+        track.style.transform = `translateX(-${currentSlideIdx * 50}%)`;
+        document.getElementById('slider-page-title').innerText = slideTitles[currentSlideIdx];
+        const dots = document.querySelectorAll('.dot');
+        dots.forEach((dot, idx) => {
+            if(idx === currentSlideIdx) dot.classList.add('active');
+            else dot.classList.remove('active');
+        });
+    }
+
     let timerInterval = null;
     let totalSeconds = 0;
     let isRunning = false;
@@ -310,9 +421,7 @@
             subjects.forEach(sub => sub.seconds = 0);
             
             timelineData = {};
-            for(let i=0; i<24; i++) { 
-                timelineData[i] = []; 
-            }
+            for(let i=0; i<24; i++) { timelineData[i] = []; }
             
             localStorage.setItem('study_total_seconds', '0');
             localStorage.setItem('study_subjects', JSON.stringify(subjects));
@@ -320,7 +429,7 @@
             
             updateTimerDisplays();
             drawTimetable();
-            console.log("Log reset");
+            renderDDays();
         }
         localStorage.setItem('study_saved_date', todayStr);
     }
@@ -331,12 +440,16 @@
         const savedSubjects = localStorage.getItem('study_subjects');
         const savedTimeline = localStorage.getItem('study_timeline_v4');
         const savedTotal = localStorage.getItem('study_total_seconds');
+        const savedDDays = localStorage.getItem('study_ddays');
 
         if (savedSubjects) subjects = JSON.parse(savedSubjects);
         if (savedTimeline) timelineData = JSON.parse(savedTimeline);
         if (savedTotal) totalSeconds = parseInt(savedTotal, 10);
+        if (savedDDays) ddayList = JSON.parse(savedDDays);
 
         currentSubjectName = subjects.length > 0 ? subjects[0].name : '';
+        loadTodos();
+        renderDDays();
     }
 
     function saveStorageData() {
@@ -365,20 +478,11 @@
         const usedColors = subjects.map(sub => sub.color);
         const availableColors = colorPalette.filter(color => !usedColors.includes(color));
         
-        let selectedColor = '';
-        if (availableColors.length > 0) {
-            const randomIndex = Math.floor(Math.random() * availableColors.length);
-            selectedColor = availableColors[randomIndex];
-        } else {
-            const randomIndex = Math.floor(Math.random() * colorPalette.length);
-            selectedColor = colorPalette[randomIndex];
-        }
+        let selectedColor = availableColors.length > 0 ? availableColors[Math.floor(Math.random() * availableColors.length)] : colorPalette[Math.floor(Math.random() * colorPalette.length)];
 
         subjects.push({ name: name, color: selectedColor, seconds: 0 });
         input.value = ''; 
-        
         if(!currentSubjectName) currentSubjectName = name;
-        
         renderSubjects();
         saveStorageData();
     }
@@ -399,9 +503,9 @@
             if (currentSubjectName === sub.name) {
                 btn.style.backgroundColor = sub.color; btn.style.borderColor = sub.color; btn.style.color = 'white';
             } else {
-                btn.style.backgroundColor = 'white'; btn.style.borderColor = '#eee'; btn.style.color = '#2d3436';
+                btn.style.backgroundColor = 'var(--card-bg)'; btn.style.borderColor = 'var(--border-color)'; btn.style.color = 'var(--text-main)';
             }
-            btn.onclick = () => selectSubject(sub.name);
+            btn.onclick = (e) => handleSubjectClick(e, sub.name);
             btnsContainer.appendChild(btn);
 
             const timerItem = document.createElement('div');
@@ -416,6 +520,42 @@
         });
     }
 
+    function handleSubjectClick(event, name) {
+        if (event.shiftKey) {
+            if (isRunning && currentSubjectName === name) {
+                return alert('현재 공부 중인 과목은 삭제할 수 없습니다. 정지 후 삭제해주세요!');
+            }
+            if (confirm(`'${name}' 과목을 삭제하시겠습니까?`)) {
+                deleteSubject(name);
+            }
+        } else {
+            selectSubject(name);
+        }
+    }
+
+    function deleteSubject(name) {
+        subjects = subjects.filter(sub => sub.name !== name);
+        
+        for (let i = 0; i < 24; i++) {
+            if (timelineData[i]) {
+                timelineData[i] = timelineData[i].map(slice => {
+                    if (slice.subjectName === name) {
+                        return { ...slice, color: '#95a5a6' };
+                    }
+                    return slice;
+                });
+            }
+        }
+
+        if (currentSubjectName === name) {
+            currentSubjectName = subjects.length > 0 ? subjects[0].name : '';
+        }
+
+        renderSubjects();
+        drawTimetable();
+        saveStorageData();
+    }
+
     function selectSubject(name) {
         if(isRunning) return alert('공부 중에는 과목을 바꿀 수 없습니다. 정지 후 변경해주세요!');
         currentSubjectName = name;
@@ -428,9 +568,8 @@
         const btn = document.getElementById('start-btn');
         if (!isRunning) {
             checkMidnightReset();
-
             isRunning = true;
-            btn.innerText = '정지';
+            btn.innerText = 'PAUSE';
             btn.classList.add('stop');
 
             const now = new Date();
@@ -445,7 +584,7 @@
             }, 1000);
         } else {
             isRunning = false;
-            btn.innerText = '시작';
+            btn.innerText = 'START';
             btn.classList.remove('stop');
             clearInterval(timerInterval);
             
@@ -455,16 +594,19 @@
             
             const activeSub = subjects.find(sub => sub.name === currentSubjectName);
             if (activeSub) {
-                timelineData[startHour].push({
-                    subjectName: activeSub.name,
-                    color: activeSub.color,
-                    startMin: startMinute,
-                    endMin: endMinute
-                });
-                
+                if (startHour !== endHour) {
+                    timelineData[startHour].push({ subjectName: activeSub.name, color: activeSub.color, startMin: startMinute, endMin: 60 });
+                    let middleHour = (startHour + 1) % 24;
+                    while (middleHour !== endHour) {
+                        timelineData[middleHour].push({ subjectName: activeSub.name, color: activeSub.color, startMin: 0, endMin: 60 });
+                        middleHour = (middleHour + 1) % 24;
+                    }
+                    timelineData[endHour].push({ subjectName: activeSub.name, color: activeSub.color, startMin: 0, endMin: endMinute });
+                } else {
+                    timelineData[startHour].push({ subjectName: activeSub.name, color: activeSub.color, startMin: startMinute, endMin: endMinute });
+                }
                 drawTimetable();
             }
-            
             saveStorageData(); 
         }
     }
@@ -501,7 +643,6 @@
             track.className = 'time-track';
             
             const slices = timelineData[i] || [];
-            
             slices.forEach(slice => {
                 const sliceDiv = document.createElement('div');
                 sliceDiv.className = 'study-slice';
@@ -509,7 +650,6 @@
                 
                 let leftPercent = (slice.startMin / 60) * 100;
                 let widthPercent = ((slice.endMin - slice.startMin) / 60) * 100;
-                
                 if(leftPercent + widthPercent > 100) widthPercent = 100 - leftPercent;
 
                 sliceDiv.style.left = `${leftPercent}%`;
@@ -522,9 +662,155 @@
                 
                 track.appendChild(sliceDiv);
             });
-            
             row.appendChild(track);
             wrapper.appendChild(row);
+        }
+    }
+
+    let todos = [];
+
+    function checkTodoEnter(event) { if (event.key === 'Enter') { addTodo(); } }
+
+    function loadTodos() {
+        const savedTodos = localStorage.getItem('study_todos');
+        if (savedTodos) { todos = JSON.parse(savedTodos); } 
+        else { todos = []; }
+        renderTodos();
+    }
+
+    function saveTodos() { localStorage.setItem('study_todos', JSON.stringify(todos)); }
+
+    function addTodo() {
+        const input = document.getElementById('todo-input');
+        const text = input.value.trim();
+        if (text === '') return;
+        todos.push({ id: Date.now(), text: text, completed: false });
+        input.value = '';
+        saveTodos();
+        renderTodos();
+    }
+
+    function toggleTodo(id) {
+        todos = todos.map(todo => {
+            if (todo.id === id) return { ...todo, completed: !todo.completed };
+            return todo;
+        });
+        saveTodos();
+        renderTodos();
+    }
+
+    function deleteTodo(id) {
+        todos = todos.filter(todo => todo.id !== id);
+        saveTodos();
+        renderTodos();
+    }
+
+    function renderTodos() {
+        const wrapper = document.getElementById('todo-list-wrapper');
+        if (!wrapper) return;
+        wrapper.innerHTML = '';
+
+        if (todos.length === 0) {
+            wrapper.innerHTML = `<li style="text-align:center; color:var(--text-muted); margin-top:30px; font-size:0.9rem; list-style:none;">오늘 할 일이 없습니다. 항목을 추가해 보세요!</li>`;
+            return;
+        }
+
+        todos.forEach(todo => {
+            const li = document.createElement('li');
+            li.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+            li.innerHTML = `
+                <div class="todo-left">
+                    <input type="checkbox" class="todo-checkbox" ${todo.completed ? 'checked' : ''} onchange="toggleTodo(${todo.id})">
+                    <span class="todo-text">${todo.text}</span>
+                </div>
+                <button class="todo-del-btn" onclick="deleteTodo(${todo.id})">×</button>
+            `;
+            wrapper.appendChild(li);
+        });
+    }
+
+    function addDDay() {
+        if (ddayList.length >= 2) {
+            alert("디데이는 최대 2개까지만 등록할 수 있습니다.");
+            return;
+        }
+        const titleInput = document.getElementById('dday-title-input');
+        const dateInput = document.getElementById('dday-date-input');
+        const title = titleInput.value.trim();
+        const targetDate = dateInput.value;
+
+        if (!title || !targetDate) {
+            alert("목표 이름과 날짜를 지정해주세요.");
+            return;
+        }
+
+        ddayList.push({ id: Date.now(), title: title, targetDate: targetDate });
+        titleInput.value = '';
+        dateInput.value = '';
+        
+        localStorage.setItem('study_ddays', JSON.stringify(ddayList));
+        renderDDays();
+    }
+
+    function deleteDDay(id) {
+        ddayList = ddayList.filter(item => item.id !== id);
+        localStorage.setItem('study_ddays', JSON.stringify(ddayList));
+        renderDDays();
+    }
+
+    function renderDDays() {
+        const wrapper = document.getElementById('dday-list-wrapper');
+        const form = document.getElementById('dday-input-form');
+        wrapper.innerHTML = '';
+
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+        ddayList.forEach(item => {
+            const target = new Date(item.targetDate);
+            const targetClean = new Date(target.getFullYear(), target.getMonth(), target.getDate()).getTime();
+            
+            const diffTime = targetClean - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            let ddayText = "";
+            if (diffDays === 0) {
+                ddayText = "D-0";
+            } else if (diffDays > 0) {
+                ddayText = `D-${diffDays}`;
+            } else {
+                ddayText = `D+${Math.abs(diffDays)}`;
+            }
+
+            const div = document.createElement('div');
+            div.className = 'dday-item';
+            div.innerHTML = `
+                <span class="dday-info" title="${item.title}">${item.title}</span>
+                <span class="dday-value">${ddayText}</span>
+                <button class="dday-del-btn" onclick="deleteDDay(${item.id})">-</button>
+            `;
+            wrapper.appendChild(div);
+        });
+
+        if (ddayList.length >= 2) {
+            form.style.display = 'none';
+        } else {
+            form.style.display = 'flex';
+        }
+    }
+
+    function toggleSubjectTimers() {
+        const container = document.getElementById('subject-timers-container');
+        const arrow = document.getElementById('toggle-arrow');
+        
+        if (!container || !arrow) return;
+        
+        container.classList.toggle('collapsed');
+        
+        if (container.classList.contains('collapsed')) {
+            arrow.innerText = '▲';
+        } else {
+            arrow.innerText = '▼';
         }
     }
 
@@ -532,6 +818,7 @@
     drawTimetable();
     renderSubjects();
     updateTimerDisplays();
+    initTheme(); 
 </script>
 
 </body>
